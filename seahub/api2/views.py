@@ -416,6 +416,7 @@ class Repos(APIView):
             'org': False,
         }
 
+        q = request.GET.get('nameContains', '')
         rtype = request.GET.get('type', "")
         if not rtype:
             # set all to True, no filter applied
@@ -429,7 +430,6 @@ class Repos(APIView):
 
         repos_json = []
         if filter_by['mine']:
-            q = request.GET.get('nameContains', '')
             if is_org_context(request):
                 org_id = request.user.org.org_id
                 owned_repos = seafile_api.get_org_owned_repo_list(org_id,
@@ -476,6 +476,8 @@ class Repos(APIView):
 
             shared_repos.sort(lambda x, y: cmp(y.last_modify, x.last_modify))
             for r in shared_repos:
+                if q and q.lower() not in r.name.lower():
+                    continue
                 r.password_need = is_passwd_set(r.repo_id, email)
                 repo = {
                     "type": "srepo",
@@ -501,6 +503,8 @@ class Repos(APIView):
             group_repos = get_group_repos(request, groups)
             group_repos.sort(lambda x, y: cmp(y.last_modify, x.last_modify))
             for r in group_repos:
+                if q and q.lower() not in r.name.lower():
+                    continue
                 repo = {
                     "type": "grepo",
                     "id": r.id,
@@ -520,6 +524,8 @@ class Repos(APIView):
         if filter_by['org'] and request.user.permissions.can_view_org():
             public_repos = list_inner_pub_repos(request)
             for r in public_repos:
+                if q and q.lower() not in r.name.lower():
+                    continue
                 repo = {
                     "type": "grepo",
                     "id": r.repo_id,
