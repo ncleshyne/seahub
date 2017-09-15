@@ -54,6 +54,13 @@ class FileUUIDMapManager(models.Manager):
         else:
             return None
 
+    def get_fileuuidmaps_by_parent_path(self, repo_id, parent_path):
+        md5_repo_id_parent_path = self.model.md5_repo_id_parent_path(repo_id, parent_path)
+        uuids = super(FileUUIDMapManager, self).filter(
+            repo_id_parent_path_md5=md5_repo_id_parent_path
+        )
+        return uuids
+
 
 class TagsManager(models.Manager):
     def get_or_create_tag(self, tagname):
